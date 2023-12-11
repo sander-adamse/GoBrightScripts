@@ -60,16 +60,13 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 # Temporarily suppress error messages during script execution
 $ErrorActionPreference = "SilentlyContinue"
 
-# Stop the transcript logging, discarding the output
-Stop-Transcript | Out-Null
-
 # Restore the default behavior of displaying error messages
 $ErrorActionPreference = "Continue"
 
-# Start a new transcript, appending to an output file named "output.txt"
-Start-Transcript -Path .\output.txt -Append
-
 function Install-GoBright {
+    # Start a new transcript, appending to an output file named "output.txt"
+    Start-Transcript -Path .\output.txt -Append
+
     # Define installation and temporary folders
     $installfolder = 'C:\gobright-view'
     $bootstrapperFolder = 'C:\gobright-view\bootstrapper'
@@ -140,8 +137,14 @@ function Install-GoBright {
     # Start GoBright View
     Write-Output 'Starting GoBright View'
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
+
+    # Stop the transcript logging, discarding the output
+    Stop-Transcript | Out-Null
 }
 function NewLocalUser {
+    # Start a new transcript, appending to an output file named "output.txt"
+    Start-Transcript -Path .\output.txt -Append
+
     $password = GetRandomCharacters -length 20 -characters 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#*+'
     "$pas sword`n" | Out-File .\password.txt -Append
 
@@ -157,9 +160,15 @@ function NewLocalUser {
     Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -value $password
     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -Value $password -PropertyType "String"
     Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultDomainName"
+
+    # Stop the transcript logging, discarding the output
+    Stop-Transcript | Out-Null
 }
 
 function CreateStartupFolder {
+    # Start a new transcript, appending to an output file named "output.txt"
+    Start-Transcript -Path .\output.txt -Append
+
     # Prompt the user for elevated privileges
     $elevatedInput = Read-Host 'Are you running this with Administrator/Elevated privileges? (yes/no)'
 
@@ -185,9 +194,15 @@ function CreateStartupFolder {
     $Shortcut.TargetPath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
     $Shortcut.WorkingDirectory = $bootstrapperFolder
     $Shortcut.Save()
+
+    # Stop the transcript logging, discarding the output
+    Stop-Transcript | Out-Null
 }
 
 function UpdateGoBright {
+    # Start a new transcript, appending to an output file named "output.txt"
+    Start-Transcript -Path .\output.txt -Append
+
     try {
         # Try to get the process named "GoBright"; if not found, throw a terminating error
         $process = Get-Process -Name "GoBright" -ErrorAction Stop
@@ -218,6 +233,9 @@ function UpdateGoBright {
     # Start Bootstrapper process
     Start-Process -FilePath "GoBright Bootstrap" -WorkingDirectory "C:\gobright-view\bootstrapper"
 
+    # Stop the transcript logging, discarding the output
+    Stop-Transcript | Out-Null
+
     # Prompt the user to restart the computer
     do {
         $restartChoice = Read-Host "Restart your computer now? (Y/N)"
@@ -235,9 +253,14 @@ function UpdateGoBright {
             }
         }
     } while ($restartChoice -notin @('y', 'n'))
+
+    
 }
 
 function FixGoBright {
+    # Start a new transcript, appending to an output file named "output.txt"
+    Start-Transcript -Path .\output.txt -Append
+    
     try {
         # Try to get the process named "GoBright"; if not found, throw a terminating error
         $process = Get-Process -Name "GoBright" -ErrorAction Stop
@@ -256,6 +279,9 @@ function FixGoBright {
     # Change permissions of parent folder
     # Delete binary folder
     # Start process
+
+    # Stop the transcript logging, discarding the output
+    Stop-Transcript | Out-Null
 }
 
 # Display the menu
