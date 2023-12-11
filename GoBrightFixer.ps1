@@ -257,6 +257,8 @@ function UpdateGoBright {
     
 }
 
+
+# WIP WIP WIP 
 function FixGoBright {
     # Start a new transcript, appending to an output file named "output.txt"
     Start-Transcript -Path .\output.txt -Append
@@ -282,6 +284,8 @@ function FixGoBright {
 
     # Stop the transcript logging, discarding the output
     Stop-Transcript | Out-Null
+
+    # Restart computer
 }
 
 # Display the menu
