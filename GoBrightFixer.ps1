@@ -54,8 +54,14 @@ else {
     Write-Host 'Environment variable set successfully. Node.js can now run on Windows 7.'
 }
 
-# Set the execution policy for PowerShell scripts on the local machine to "RemoteSigned"
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+try {
+    # Set the execution policy for PowerShell scripts on the local machine to "RemoteSigned"
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -ErrorAction Stop
+}
+catch {
+    Write-Error "Failed to set execution policy. Please run this script as an administrator."
+    exit 1
+}
 
 # Temporarily suppress error messages during script execution
 $ErrorActionPreference = "SilentlyContinue"
@@ -144,9 +150,9 @@ function Install-GoBright {
 function NewLocalUser {
     # Start a new transcript, appending to an output file named "output.txt"
     Start-Transcript -Path .\output.txt -Append
-
+    
     $password = GetRandomCharacters -length 20 -characters 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#*+'
-    "$pas sword`n" | Out-File .\password.txt -Append
+    "$password `n" | Out-File .\password.txt -Append
 
     $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
     Set-LocalUser "NC-KioskUser" -Password $SecurePassword -AccountNeverExpires -PasswordNeverExpires 1 -Description "NC-KioskUser - $password"
