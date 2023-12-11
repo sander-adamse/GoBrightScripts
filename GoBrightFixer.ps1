@@ -69,7 +69,6 @@ $ErrorActionPreference = "Continue"
 # Start a new transcript, appending to an output file named "output.txt"
 Start-Transcript -Path .\output.txt -Append
 
-# GoBrightInstaller Function - Use this on a new installed Windows operation system
 function Install-GoBright {
     # Define installation and temporary folders
     $installfolder = 'C:\gobright-view'
