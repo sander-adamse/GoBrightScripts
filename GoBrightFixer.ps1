@@ -1,73 +1,69 @@
-#Checking if Powershell version is 5 or greater
-if ($PSVersionTable.PSVersion.Major -ge 5) {
-    # Display a message if the condition is true
-    $currentVersion = $PSVersionTable.PSVersion.Major
-    Write-Output "Required PowerShell version is 5. Current version is $currentVersion"
-}
+function Startup {
+    #Checking if Powershell version is 5 or greater
+    if ($PSVersionTable.PSVersion.Major -ge 5) {
+        # Display a message if the condition is true
+        $currentVersion = $PSVersionTable.PSVersion.Major
+        Write-Output "Required PowerShell version is 5. Current version is $currentVersion"
+    }
 
-else {
-    # Display a message if Powershell version is not equal or greater than 5.
-    Write-Output "The PowerShell version must be at least version 5. Click here to download the supported version: https://www.microsoft.com/en-us/download/details.aspx?id=54616"
+    else {
+        # Display a message if Powershell version is not equal or greater than 5.
+        Write-Output "The PowerShell version must be at least version 5. Click here to download the supported version: https://www.microsoft.com/en-us/download/details.aspx?id=54616"
 
-    # Open a URL in the default web browser to download Windows Management Framework 5.1.
-    Start-Process "https://www.microsoft.com/en-us/download/details.aspx?id=54616"
+        # Open a URL in the default web browser to download Windows Management Framework 5.1.
+        Start-Process "https://www.microsoft.com/en-us/download/details.aspx?id=54616"
 
-    # Prompt the user to press Enter to exit the script
-    Read-Host "Press ENTER to exit"
+        # Prompt the user to press Enter to exit the script
+        Read-Host "Press ENTER to exit"
 
-    # Exit the script
-    Exit
-}
+        # Exit the script
+        Exit
+    }
 
-# Check if the operating system is 64-bit; proceed if true
-if ([Environment]::Is64BitOperatingSystem) {
-    # Display a message if the condition is true
-    Write-Output "GoBright View supports 64-bit Windows. The script will proceed."
-}
-else {
-    # Display a message if the condition is false
-    Write-Output 'GoBright View requires 64-bit Windows. This Windows PC is not 64-bit and is not supported.'
+    # Check if the operating system is 64-bit; proceed if true
+    if ([Environment]::Is64BitOperatingSystem) {
+        # Display a message if the condition is true
+        Write-Output "GoBright View supports 64-bit Windows. The script will proceed."
+    }
+    else {
+        # Display a message if the condition is false
+        Write-Output 'GoBright View requires 64-bit Windows. This Windows PC is not 64-bit and is not supported.'
     
-    # Prompt the user to press Enter to exit the script
-    Read-Host 'Press ENTER to exit'
+        # Prompt the user to press Enter to exit the script
+        Read-Host 'Press ENTER to exit'
     
-    # Exit the script
-    exit
-}
+        # Exit the script
+        exit
+    }
 
-# Retrieve the operating system version
-$osVersion = [System.Environment]::OSVersion.Version
+    # Retrieve the operating system version
+    $osVersion = [System.Environment]::OSVersion.Version
 
-# Check if the operating system is Windows 10 or higher
-if ($osVersion.Major -ge 10) {
-    # Output a message indicating that the current version is Windows 10 or 11
-    Write-Host "Current version of Windows is Windows $($osVersion.Major). Continuing with the script."
-}
-else {
-    # Inform the user about setting an environment variable for Node.js on Windows 7
-    Write-Host 'Configuring Node.js for compatibility with Windows 7'
+    # Check if the operating system is Windows 10 or higher
+    if ($osVersion.Major -ge 10) {
+        # Output a message indicating that the current version is Windows 10 or 11
+        Write-Host "Current version of Windows is Windows $($osVersion.Major). Continuing with the script."
+    }
+    else {
+        # Inform the user about setting an environment variable for Node.js on Windows 7
+        Write-Host 'Configuring Node.js for compatibility with Windows 7'
 
-    # Set the environment variable 'NODE_SKIP_PLATFORM_CHECK' to 1 for Node.js
-    [System.Environment]::SetEnvironmentVariable('NODE_SKIP_PLATFORM_CHECK', 1, [System.EnvironmentVariableTarget]::Machine)
+        # Set the environment variable 'NODE_SKIP_PLATFORM_CHECK' to 1 for Node.js
+        [System.Environment]::SetEnvironmentVariable('NODE_SKIP_PLATFORM_CHECK', 1, [System.EnvironmentVariableTarget]::Machine)
 
-    # Provide feedback to the user
-    Write-Host 'Environment variable set successfully. Node.js can now run on Windows 7.'
-}
+        # Provide feedback to the user
+        Write-Host 'Environment variable set successfully. Node.js can now run on Windows 7.'
+    }
 
-try {
     # Set the execution policy for PowerShell scripts on the local machine to "RemoteSigned"
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -ErrorAction Stop
-}
-catch {
-    Write-Error "Failed to set execution policy. Please run this script as an administrator."
-    exit 1
-}
 
-# Temporarily suppress error messages during script execution
-$ErrorActionPreference = "SilentlyContinue"
+    # Temporarily suppress error messages during script execution
+    $ErrorActionPreference = "SilentlyContinue"
 
-# Restore the default behavior of displaying error messages
-$ErrorActionPreference = "Continue"
+    # Restore the default behavior of displaying error messages
+    $ErrorActionPreference = "Continue"
+}
 
 function Install-GoBright {
     # Start a new transcript, appending to an output file named "output.txt"
@@ -150,7 +146,7 @@ function Install-GoBright {
 function NewLocalUser {
     # Start a new transcript, appending to an output file named "output.txt"
     Start-Transcript -Path .\output.txt -Append
-    
+
     $password = GetRandomCharacters -length 20 -characters 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#*+'
     "$password `n" | Out-File .\password.txt -Append
 
@@ -293,6 +289,8 @@ function FixGoBright {
 
     # Restart computer
 }
+
+Startup
 
 # Display the menu
 do {
