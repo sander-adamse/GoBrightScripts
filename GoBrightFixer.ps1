@@ -1,4 +1,4 @@
-#Checking if Powershell version is 5 or greater
+#Checking if Powershell version is 5 or greater Test
 if ($PSVersionTable.PSVersion.Major -ge 5) {
     # Display a message if the condition is true
     $currentVersion = $PSVersionTable.PSVersion.Major
