@@ -67,7 +67,7 @@ function Startup {
 
 function Install-GoBright {
     # Start a new transcript, appending to an output file named "output.txt"
-    Start-Transcript -Path .\output.txt -Append
+    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     # Define installation and temporary folders
     $installfolder = 'C:\gobright-view'
@@ -158,7 +158,7 @@ function ScrambleString([string]$inputString) {
 }
 function NewLocalUser {
     # Start a new transcript, appending to an output file named "output.txt"
-    Start-Transcript -Path .\output.txt -Append
+    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $password = CreateRandomCharacters -length 5 -characters 'abcdefghiklmnoprstuvwxyz'
     $password += CreateRandomCharacters -length 5 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
@@ -191,7 +191,7 @@ function NewLocalUser {
 
 function CreateStartupFolder {
     # Start a new transcript, appending to an output file named "output.txt"
-    Start-Transcript -Path .\output.txt -Append
+    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     # Prompt the user for elevated privileges
     $elevatedInput = Read-Host 'Are you running this with Administrator/Elevated privileges? (yes/no)'
@@ -225,7 +225,7 @@ function CreateStartupFolder {
 
 function UpdateGoBright {
     # Start a new transcript, appending to an output file named "output.txt"
-    Start-Transcript -Path .\output.txt -Append
+    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $sessionInfo = quser | Where-Object { $_ -match 'NC-KioskUser' }
     if ($sessionInfo) {
@@ -257,16 +257,30 @@ function UpdateGoBright {
     }
     
     #Delete folder binaries
-    Remove-Item -Path 'C:\gobright-view\_dotnetbrowser-binaries' -Recurse -Force
+    try {
+        Remove-Item -Path 'C:\gobright-view\_dotnetbrowser-binaries' -Recurse -Force
+    }
+    catch {
+        Write-Output "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
+    }
 
-    # # Specify the path to the directory
-    # $directoryPath = "C:\gobright-view\"
-
-    # # Set the permission for the Users group
-    # # icacls $directoryPath /grant Gebruikers:(OI)(CI)F /T
+    try {
+        # Import the required module for managing permissions
+        Import-Module -Name Microsoft.PowerShell.Security
+    
+        # Change permissions of "C:\gobright-view\" folder
+        $folderPath = "C:\gobright-view\"
+        $acl = Get-Acl -Path $folderPath
+        $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule("Gebruikers", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $acl.SetAccessRule($rule)
+        Set-Acl -Path $folderPath -AclObject $acl
+    }
+    catch {
+        Write-Output "An error occured while setting permissions on the folder 'C:\gobright-view\'"
+    }
 
     # Download the latest update from GoBright
-    Write-Output 'Download the latest update and put it in the install folder'
+    Write-Output 'Downloading the latest update and put it in the install folder'
         
     #URL to GoBright Installer | https://install.gobright.cloud/view/windows/?mode=download&version=5.8.9 ---> Current version used
     $Url = 'http://install.gobright.cloud/view/windows/latest'
