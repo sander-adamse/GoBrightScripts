@@ -35,12 +35,6 @@ function Startup {
 }
 
 function Install-GoBright {
-    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
-        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
-    }
-    
-    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
-
     $installfolder = 'C:\gobright-view'
     $bootstrapperFolder = 'C:\gobright-view\bootstrapper'
     $tempFolder = 'C:\gobright-view\temp'
@@ -100,8 +94,6 @@ function Install-GoBright {
 
     Write-Output 'Starting GoBright View'
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
-
-    Stop-Transcript | Out-Null
 }
 
 function CreateRandomCharacters($length, $characters) {
@@ -117,12 +109,6 @@ function ScrambleString([string]$inputString) {
     return $outputString 
 }
 function NewLocalUser {
-    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
-        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
-    }
-
-    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
-
     $password = CreateRandomCharacters -length 5 -characters 'abcdefghiklmnoprstuvwxyz'
     $password += CreateRandomCharacters -length 5 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
     $password += CreateRandomCharacters -length 5 -characters '1234567890'
@@ -142,17 +128,9 @@ function NewLocalUser {
     Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -value $password
     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -Value $password -PropertyType "String"
     Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultDomainName"
-
-    Stop-Transcript | Out-Null
 }
 
 function CreateStartupFolder {
-    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
-        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
-    }
-
-    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
-
     $elevatedInput = Read-Host 'Are you running this with Administrator/Elevated privileges? (yes/no)'
 
     if ($elevatedInput -eq 'yes') {
@@ -175,16 +153,9 @@ function CreateStartupFolder {
     $Shortcut.TargetPath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
     $Shortcut.WorkingDirectory = $bootstrapperFolder
     $Shortcut.Save()
-
-    Stop-Transcript | Out-Null
 }
 
 function UpdateGoBright {
-    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
-        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
-    }
-    Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
-
     $sessionInfo = quser | Where-Object { $_ -match 'NC-KioskUser' }
     if ($sessionInfo) {
         $sessionId = $sessionInfo -split '\s+' | Select-Object -Index 2
@@ -236,8 +207,6 @@ function UpdateGoBright {
     Invoke-WebRequest -Uri $Url -OutFile "C:\gobright-view\download.zip"
     Rename-Item -Path "C:\gobright-view\download.zip" -NewName "C:\gobright-view\update.zip"
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
-    
-    Stop-Transcript | Out-Null
 
     do {
         $restartChoice = Read-Host "Restart your computer now? (Y/N)"
