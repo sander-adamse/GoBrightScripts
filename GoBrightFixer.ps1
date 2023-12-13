@@ -35,6 +35,10 @@ function Startup {
 }
 
 function Install-GoBright {
+    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
+        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
+    }
+    
     Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $installfolder = 'C:\gobright-view'
@@ -113,6 +117,10 @@ function ScrambleString([string]$inputString) {
     return $outputString 
 }
 function NewLocalUser {
+    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
+        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
+    }
+
     Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $password = CreateRandomCharacters -length 5 -characters 'abcdefghiklmnoprstuvwxyz'
@@ -139,6 +147,10 @@ function NewLocalUser {
 }
 
 function CreateStartupFolder {
+    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
+        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
+    }
+
     Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $elevatedInput = Read-Host 'Are you running this with Administrator/Elevated privileges? (yes/no)'
@@ -168,6 +180,9 @@ function CreateStartupFolder {
 }
 
 function UpdateGoBright {
+    if (-not (Test-Path "C:\gobright-view\script-output.txt")) {
+        New-Item -ItemType File -Path "C:\gobright-view\script-output.txt" | Out-Null
+    }
     Start-Transcript -Path "C:\gobright-view\script-output.txt" -Append
 
     $sessionInfo = quser | Where-Object { $_ -match 'NC-KioskUser' }
