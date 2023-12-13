@@ -188,7 +188,6 @@ function UpdateGoBright {
 
     try {
         Import-Module -Name Microsoft.PowerShell.Security
-    
         $folderPath = "C:\gobright-view\"
         $acl = Get-Acl -Path $folderPath
         $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule("Gebruikers", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
