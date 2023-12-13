@@ -256,9 +256,9 @@ function UpdateGoBright {
         Write-Host "An error occurred: $($_.Exception.Message)"
     }
     
-    #Delete folder binaries
     try {
-        Remove-Item -Path 'C:\gobright-view\_dotnetbrowser-binaries' -Recurse -Force
+        #Delete folder binaries
+        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path 'C:\Users\sande\Downloads\test' -Recurse -Force"
     }
     catch {
         Write-Output "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
