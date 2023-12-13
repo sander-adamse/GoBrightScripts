@@ -208,22 +208,29 @@ function UpdateGoBright {
     Rename-Item -Path "C:\gobright-view\download.zip" -NewName "C:\gobright-view\update.zip"
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
 
-    do {
-        $restartChoice = Read-Host "Restart your computer now? (Y/N)"
-        switch ($restartChoice.ToLower()) {
-            'y' {
-                Restart-Computer -Force
-                break
-            }
-            'n' {
-                Write-Host "No restart. Please restart manually if needed."
-                break
-            }
-            default {
-                Write-Host "Invalid choice. Please select Y or N."
-            }
-        }
-    } while ($restartChoice -notin @('y', 'n'))
+    $delayInSeconds = 300  # 5 minutes in seconds
+    Write-Host "Restarting computer in $delayInSeconds seconds..."
+    Start-Sleep -Seconds $delayInSeconds
+    Restart-Computer -Force
+
+    # ...
+
+    # do {
+    #     $restartChoice = Read-Host "Restart your computer now? (Y/N)"
+    #     switch ($restartChoice.ToLower()) {
+    #         'y' {
+    #             Restart-Computer -Force
+    #             break
+    #         }
+    #         'n' {
+    #             Write-Host "No restart. Please restart manually if needed."
+    #             break
+    #         }
+    #         default {
+    #             Write-Host "Invalid choice. Please select Y or N."
+    #         }
+    #     }
+    # } while ($restartChoice -notin @('y', 'n'))
 }
 
 Startup
