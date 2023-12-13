@@ -143,17 +143,39 @@ function Install-GoBright {
     # Stop the transcript logging, discarding the output
     Stop-Transcript | Out-Null
 }
+
+function CreateRandomCharacters($length, $characters) {
+    $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.length }
+    $private:ofs = ""
+    return [String]$characters[$random]
+}
+ 
+function ScrambleString([string]$inputString) {     
+    $characterArray = $inputString.ToCharArray()   
+    $scrambledStringArray = $characterArray | Get-Random -Count $characterArray.Length     
+    $outputString = -join $scrambledStringArray
+    return $outputString 
+}
 function NewLocalUser {
     # Start a new transcript, appending to an output file named "output.txt"
     Start-Transcript -Path .\output.txt -Append
 
-    $password = GetRandomCharacters -length 20 -characters 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#*+'
+    $password = CreateRandomCharacters -length 5 -characters 'abcdefghiklmnoprstuvwxyz'
+    $password += CreateRandomCharacters -length 5 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
+    $password += CreateRandomCharacters -length 5 -characters '1234567890'
+    $password += CreateRandomCharacters -length 5 -characters '!"$%&/()=?}][{@#+'
+    $password = ScrambleString $password
     "$password `n" | Out-File .\password.txt -Append
 
     $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+    ## Indien het account al bestaat, wordt het password en registerwaarden identiek
     Set-LocalUser "NC-KioskUser" -Password $SecurePassword -AccountNeverExpires -PasswordNeverExpires 1 -Description "NC-KioskUser - $password"
+    ## Indien het account niet bestaat, wordt het aangemaakt
     New-LocalUser "NC-KioskUser" -Password $SecurePassword -FullName "NC-KioskUser" -Description "NC-KioskUser - $password" -UserMayNotChangePassword -AccountNeverExpires -PasswordNeverExpires
+
     Add-LocalGroupMember -Group "Gebruikers" -Member "NC-KioskUser"
+
+    ## ======= Vullen RegisterWaarden Autologon =======
 
     ##Gezet via GPP## Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value 1
     ##Gezet via GPP## New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value 1 -PropertyType "String"
@@ -205,9 +227,23 @@ function UpdateGoBright {
     # Start a new transcript, appending to an output file named "output.txt"
     Start-Transcript -Path .\output.txt -Append
 
+    $sessionInfo = quser | Where-Object { $_ -match 'NC-KioskUser' }
+    if ($sessionInfo) {
+        $sessionId = $sessionInfo -split '\s+' | Select-Object -Index 2
+        logoff $sessionId
+    }
+    else {
+        Write-Host "User 'NC-KioskUser' not found."
+    }
+
     try {
         # Try to get the process named "GoBright"; if not found, throw a terminating error
-        $process = Get-Process -Name "GoBright" -ErrorAction Stop
+        $process = Get-Process -Name "GoBright.Signage.Player" -ErrorAction Stop
+        # If the process is found, stop it forcefully
+        $process | Stop-Process -Force
+
+        # Try to get the process named "GoBright"; if not found, throw a terminating error
+        $process = Get-Process -Name "GoBright.Signage.Player.Bootstrapper" -ErrorAction Stop
         # If the process is found, stop it forcefully
         $process | Stop-Process -Force
     }
@@ -220,6 +256,15 @@ function UpdateGoBright {
         Write-Host "An error occurred: $($_.Exception.Message)"
     }
     
+    #Delete folder binaries
+    Remove-Item -Path 'C:\gobright-view\_dotnetbrowser-binaries' -Recurse -Force
+
+    # # Specify the path to the directory
+    # $directoryPath = "C:\gobright-view\"
+
+    # # Set the permission for the Users group
+    # # icacls $directoryPath /grant Gebruikers:(OI)(CI)F /T
+
     # Download the latest update from GoBright
     Write-Output 'Download the latest update and put it in the install folder'
         
@@ -232,8 +277,8 @@ function UpdateGoBright {
     # Rename the downloaded file to "update.zip"
     Rename-Item -Path "C:\gobright-view\download.zip" -NewName "C:\gobright-view\update.zip"
 
-    # Start Bootstrapper process
-    Start-Process -FilePath "GoBright Bootstrap" -WorkingDirectory "C:\gobright-view\bootstrapper"
+    # # Start Bootstrapper process, start-process below does not start bootstrapper properly
+    Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
 
     # Stop the transcript logging, discarding the output
     Stop-Transcript | Out-Null
@@ -255,39 +300,6 @@ function UpdateGoBright {
             }
         }
     } while ($restartChoice -notin @('y', 'n'))
-
-    
-}
-
-
-# WIP WIP WIP 
-function FixGoBright {
-    # Start a new transcript, appending to an output file named "output.txt"
-    Start-Transcript -Path .\output.txt -Append
-    
-    try {
-        # Try to get the process named "GoBright"; if not found, throw a terminating error
-        $process = Get-Process -Name "GoBright" -ErrorAction Stop
-        # If the process is found, stop it forcefully
-        $process | Stop-Process -Force
-    }
-    catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
-        # Catch the specific exception when the process is not found
-        Write-Host "$process not found"
-    }
-    catch {
-        # Catch any other exceptions that may occur
-        Write-Host "An error occurred: $($_.Exception.Message)"
-    }
-
-    # Change permissions of parent folder
-    # Delete binary folder
-    # Start process
-
-    # Stop the transcript logging, discarding the output
-    Stop-Transcript | Out-Null
-
-    # Restart computer
 }
 
 Startup
@@ -301,8 +313,7 @@ do {
     Write-Host "Option 3. Create Startup Folder"
     Write-Host ""
     Write-Host "=== Updater Menu ==="
-    Write-Host "Option 4. Update GoBright Installation"
-    Write-Host "Option 5. Fix GoBright Installation"
+    Write-Host "Option 4. Update/Fix GoBright Installation"
     Write-Host ""
     Write-Host "Q. Quit"
 
@@ -315,7 +326,6 @@ do {
         '2' { Install-GoBright }
         '3' { CreateStartupFolder }
         '4' { UpdateGoBright }
-        '5' { FixGoBright }
         'Q' { break } # Exit the loop if 'Q' is selected
         default { Write-Host "Invalid choice. Please try again." }
     }
@@ -326,8 +336,3 @@ do {
     }
 
 } while ($choice -ne 'Q')
-
-
-
-
-
