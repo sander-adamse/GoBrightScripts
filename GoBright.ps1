@@ -176,6 +176,8 @@ function NewLocalUser {
             Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
         }
     }
+    
+    doRestart -60
 }
 
 function Install-GoBright {
@@ -334,15 +336,7 @@ function UpdateGoBright {
         Write-Error "File '$filePath' does not exist."
     }
     
-    $delayInSeconds = 300  # 5 minutes in seconds
-    Write-Host "Restarting computer in $delayInSeconds seconds..."
-    try {
-        Start-Sleep -Seconds $delayInSeconds
-        Restart-Computer -Force
-    }
-    catch {
-        Write-Error "An error occurred while restarting the computer."
-    }    
+    doRestart -delay 300
 }
 
 function RestartNUC {
