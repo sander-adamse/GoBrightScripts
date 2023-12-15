@@ -105,12 +105,13 @@ function CreateRandomPassword($length) {
 
 function NewLocalUser {    
     $password = CreateRandomPassword -length 20
-    Write-Output $password
+    Write-Output "NC-KioskUser Password: $password"
     
     if (!(Test-Path -Path 'C:\gobright-view')) {
         try {
             New-Item -ItemType Directory -Path 'C:\gobright-view' | Out-Null
             "$password `n" | Out-File 'C:\gobright-view\password.txt' -Append
+            Write-Output "Password saved to 'C:\gobright-view\password.txt'."
         }
         catch {
             Write-Error "An error occurred while creating the folder 'C:\gobright-view'."
@@ -118,15 +119,18 @@ function NewLocalUser {
     }
     else {
         "$password `n" | Out-File 'C:\gobright-view\password.txt' -Append
+        Write-Output "Password saved to 'C:\gobright-view\password.txt'."
     }
     
     $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
     $username = "NC-KioskUser"
+    $usergroup = "Gebruikers"
     
     $checkUser = (Get-Localuser).name -contains $username -as [bool]
     if (!$checkUser) {
         try {
             New-LocalUser $username -Password $SecurePassword -FullName $username -Description "$username - $password" -UserMayNotChangePassword -AccountNeverExpires -PasswordNeverExpires
+            Write-Output "User '$username' created."
         }
         catch {
             Write-Error "An error occurred while creating the user '$username'."
@@ -135,28 +139,31 @@ function NewLocalUser {
     else {
         try {
             Set-LocalUser $username -Password $SecurePassword -AccountNeverExpires -PasswordNeverExpires 1 -Description "$username - $password"
+            Write-Output "Password for user '$username' set."
         }
         catch {
             Write-Error "An error occurred while setting the password for the user '$username'."
         }
     }
     
-    $checkMembership = Get-LocalGroupMember -Group "Gebruikers" | Where-Object { $_.Name -eq $env:computername + "\$username" }
+    $checkMembership = Get-LocalGroupMember -Group $usergroup | Where-Object { $_.Name -eq $env:computername + "\$username" }
     if (!$checkMembership) {
         try {
-            Add-LocalGroupMember -Group "Gebruikers" -Member $username
+            Add-LocalGroupMember -Group $usergroup -Member $username
+            Write-Output "User '$username' added to the group $usergroup."
         }
         catch {
-            Write-Error "An error occurred while adding the user '$username' to the group 'Gebruikers'."
+            Write-Error "An error occurred while adding the user '$username' to the group $usergroup."
         }
         
     }
     
     $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
     
-    if (!(Test-Path -Path "$registryPath\AutoAdminLogon")) {
+    if (Test-Path -Path "$registryPath\AutoAdminLogon") {
         try {
             New-ItemProperty -Path $registryPath -Name "AutoAdminLogon" -Value 1 -PropertyType "DWord"
+            Write-Output "Registry value 'AutoAdminLogon' created."
         }
         catch {
             Write-Error "An error occurred while creating the registry value 'AutoAdminLogon'."
@@ -165,15 +172,17 @@ function NewLocalUser {
     else {
         try {
             Set-ItemProperty -Path $registryPath -Name "AutoAdminLogon" -Value 1
+            Write-Output "Registry value 'AutoAdminLogon' set."
         }
         catch {
             Write-Error "An error occurred while setting the registry value 'AutoAdminLogon'."
         }
     }
     
-    if (!(Test-Path -Path "$registryPath\DefaultUserName")) {
+    if (Test-Path -Path "$registryPath\DefaultUserName") {
         try {
             New-ItemProperty -Path $registryPath -Name "DefaultUserName" -Value $username -PropertyType "String"
+            Write-Output "Registry value 'DefaultUserName' created."
         }
         catch {
             Write-Error "An error occurred while creating the registry value 'DefaultUserName'."
@@ -182,15 +191,17 @@ function NewLocalUser {
     else {
         try {
             Set-ItemProperty -Path $registryPath -Name "DefaultUserName" -Value $username
+            Write-Output "Registry value 'DefaultUserName' set."
         }
         catch {
             Write-Error "An error occurred while setting the registry value 'DefaultUserName'."
         }
     }
     
-    if (!(Test-Path -Path "$registryPath\DefaultPassword")) {
+    if (Test-Path -Path "$registryPath\DefaultPassword") {
         try {
-            New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword -PropertyType "String"
+            New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $password -PropertyType "String"
+            Write-Output "Registry value 'DefaultPassword' created."
         }
         catch {
             Write-Error "An error occurred while creating the registry value 'DefaultPassword'."
@@ -198,7 +209,8 @@ function NewLocalUser {
     }
     else {
         try {
-            Set-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword
+            Set-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $password
+            Write-Output "Registry value 'DefaultPassword' set."
         }
         catch {
             Write-Error "An error occurred while setting the registry value 'DefaultPassword'."
@@ -209,6 +221,7 @@ function NewLocalUser {
     if (Test-Path -Path "$registryPath\DefaultDomainName") {
         try {
             Remove-ItemProperty -Path $registryPath -Name "DefaultDomainName"
+            Write-Output "Registry value 'DefaultDomainName' removed."
         }
         catch {
             Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
