@@ -176,7 +176,7 @@ function NewLocalUser {
             Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
         }
     }
-    
+
     doRestart -60
 }
 
@@ -354,7 +354,7 @@ do {
     Write-Host "Option 4. Restart Computer"
     Write-Host ""
     Write-Host "=== Updater Menu ==="
-    Write-Host "Option 4. Update/Fix GoBright Installation"
+    Write-Host "Option 5. Update/Fix GoBright Installation"
     Write-Host ""
     Write-Host "Q. Quit"
 
