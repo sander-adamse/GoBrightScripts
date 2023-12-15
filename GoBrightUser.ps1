@@ -91,7 +91,7 @@ else {
 
 if (Test-Path -Path "$registryPath\DefaultPassword") {
     try {
-        New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword -PropertyType "String"
+        New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $password -PropertyType "String"
     }
     catch {
         Write-Error "An error occurred while creating the registry value 'DefaultPassword'."
@@ -99,7 +99,7 @@ if (Test-Path -Path "$registryPath\DefaultPassword") {
 }
 else {
     try {
-        Set-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword
+        Set-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $password
     }
     catch {
         Write-Error "An error occurred while setting the registry value 'DefaultPassword'."
