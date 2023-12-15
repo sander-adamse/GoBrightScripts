@@ -55,7 +55,7 @@ if (!$checkMembership) {
 
 $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
-if (!(Test-Path -Path "$registryPath\AutoAdminLogon")) {
+if (Test-Path -Path "$registryPath\AutoAdminLogon") {
     try {
         New-ItemProperty -Path $registryPath -Name "AutoAdminLogon" -Value 1 -PropertyType "DWord"
     }
@@ -72,7 +72,7 @@ else {
     }
 }
 
-if (!(Test-Path -Path "$registryPath\DefaultUserName")) {
+if (Test-Path -Path "$registryPath\DefaultUserName") {
     try {
         New-ItemProperty -Path $registryPath -Name "DefaultUserName" -Value $username -PropertyType "String"
     }
@@ -89,7 +89,7 @@ else {
     }
 }
 
-if (!(Test-Path -Path "$registryPath\DefaultPassword")) {
+if (Test-Path -Path "$registryPath\DefaultPassword") {
     try {
         New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword -PropertyType "String"
     }
@@ -110,6 +110,7 @@ else {
 if (Test-Path -Path "$registryPath\DefaultDomainName") {
     try {
         Remove-ItemProperty -Path $registryPath -Name "DefaultDomainName"
+        Write-Output "Registry value 'DefaultDomainName' removed."
     }
     catch {
         Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
