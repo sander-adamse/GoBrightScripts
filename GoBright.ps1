@@ -350,7 +350,9 @@ function CreateStartupFolder {
         return
     }
     else {
+        $bootstrapperFolder = 'C:\gobright-view\bootstrapper'
         $startupFolder = [Environment]::GetFolderPath('Startup')
+        
         Write-Output 'Create shortcut in startup folder'
         $WshShell = New-Object -comObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut($startupFolder + "\GoBright View.lnk")
