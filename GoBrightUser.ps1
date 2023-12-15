@@ -23,6 +23,7 @@ else {
 
 $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $username = "NC-KioskUser"
+$usergroup = "Gebruikers"
 
 $checkUser = (Get-Localuser).name -contains $username -as [bool]
 if (!$checkUser) {
@@ -42,13 +43,13 @@ else {
     }
 }
 
-$checkMembership = Get-LocalGroupMember -Group "Gebruikers" | Where-Object { $_.Name -eq $env:computername + "\$username" }
+$checkMembership = Get-LocalGroupMember -Group $usergroup | Where-Object { $_.Name -eq $env:computername + "\$username" }
 if (!$checkMembership) {
     try {
-        Add-LocalGroupMember -Group "Gebruikers" -Member $username
+        Add-LocalGroupMember -Group $usergroup -Member $username
     }
     catch {
-        Write-Error "An error occurred while adding the user '$username' to the group 'Gebruikers'."
+        Write-Error "An error occurred while adding the user '$username' to the group $usergroup."
     }
     
 }
