@@ -9,7 +9,7 @@ if ($sessionInfo) {
         Write-Output "User 'NC-KioskUser' logged off."
     }
     catch {
-        Write-Output "An error occurred while logging off the user 'NC-KioskUser'."
+        Write-Error "An error occurred while logging off the user 'NC-KioskUser'."
     }
 }
 else {
@@ -25,9 +25,9 @@ if ($processes) {
             Write-Output "Process '$process' stopped." 
         }
         catch [Microsoft.PowerShell.Commands.ProcessCommandException] { 
-            Write-Host "$process not found" 
+            Write-Error "$process not found" 
         } 
-        catch { Write-Host "An error occurred: $($_.Exception.Message)" }
+        catch { Write-Error "An error occurred: $($_.Exception.Message)" }
     }
 }
 
@@ -39,7 +39,7 @@ if (Test-Path -Path $folderPath) {
         Write-Output "Folder '$folderPath' deleted."
     }
     catch {
-        Write-Output "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
+        Write-Error "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
     }
 }
 else {
@@ -57,7 +57,7 @@ if (Test-Path -Path $folderPath) {
         Write-Output "Permissions set on folder '$folderPath'."
     }
     catch {
-        Write-Output "An error occured while setting permissions on the folder 'C:\gobright-view\'"
+        Write-Error "An error occured while setting permissions on the folder 'C:\gobright-view\'"
     }
 }
 else {
@@ -79,7 +79,7 @@ if ($HTTP_Status -eq 200) {
     Else { $HTTP_Response.Close() }
 }
 else {
-    Write-Host "The Site may be down, please check."
+    Write-Error "The Site may be down, please check."
 }
 
 $filePath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
@@ -88,7 +88,7 @@ if (Test-Path -Path $filePath) {
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
 }
 else {
-    Write-Host "File '$filePath' does not exist."
+    Write-Error "File '$filePath' does not exist."
 }
 
 $delayInSeconds = 300  # 5 minutes in seconds
@@ -98,7 +98,7 @@ try {
     Restart-Computer -Force
 }
 catch {
-    Write-Output "An error occurred while restarting the computer."
+    Write-Error "An error occurred while restarting the computer."
 }
 
 

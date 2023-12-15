@@ -96,140 +96,229 @@ function Install-GoBright {
     Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
 }
 
-function CreateRandomCharacters($length, $characters) {
-    $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.length }
+function CreateRandomPassword($length) {
+    $characters = 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#+'
+    $randomPassword = 1..$length | ForEach-Object { Get-Random -Maximum $characters.Length }
     $private:ofs = ""
-    return [String]$characters[$random]
-}
- 
-function ScrambleString([string]$inputString) {     
-    $characterArray = $inputString.ToCharArray()   
-    $scrambledStringArray = $characterArray | Get-Random -Count $characterArray.Length     
-    $outputString = -join $scrambledStringArray
-    return $outputString 
-}
-function NewLocalUser {
-    $password = CreateRandomCharacters -length 5 -characters 'abcdefghiklmnoprstuvwxyz'
-    $password += CreateRandomCharacters -length 5 -characters 'ABCDEFGHKLMNOPRSTUVWXYZ'
-    $password += CreateRandomCharacters -length 5 -characters '1234567890'
-    $password += CreateRandomCharacters -length 5 -characters '!"$%&/()=?}][{@#+'
-    $password = ScrambleString $password
-    "$password `n" | Out-File .\password.txt -Append
-
-    $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
-    Set-LocalUser "NC-KioskUser" -Password $SecurePassword -AccountNeverExpires -PasswordNeverExpires 1 -Description "NC-KioskUser - $password"
-    New-LocalUser "NC-KioskUser" -Password $SecurePassword -FullName "NC-KioskUser" -Description "NC-KioskUser - $password" -UserMayNotChangePassword -AccountNeverExpires -PasswordNeverExpires
-    Add-LocalGroupMember -Group "Gebruikers" -Member "NC-KioskUser"
-
-    ##Gezet via GPP## Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value 1
-    ##Gezet via GPP## New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value 1 -PropertyType "String"
-    ##Gezet via GPP## Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultUserName" -Value "NC-KioskUser"
-    ##Gezet via GPP## New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultUserName" -Value "NC-KioskUser" -PropertyType "String"
-    Set-Itemproperty -path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -value $password
-    New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -Value $password -PropertyType "String"
-    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultDomainName"
+    return [String]$characters[$randomPassword]
 }
 
-function CreateStartupFolder {
-    $elevatedInput = Read-Host 'Are you running this with Administrator/Elevated privileges? (yes/no)'
-
-    if ($elevatedInput -eq 'yes') {
-        Write-Output 'Script ended. Please run this function WITHOUT Administrator/Elevated privileges'
-        return
-    }
-    elseif ($elevatedInput -eq 'no') {
-        Write-Output 'Continuing with the script.'
+function NewLocalUser {    
+    $password = CreateRandomPassword -length 20
+    Write-Output $password
+    
+    if (!(Test-Path -Path 'C:\gobright-view')) {
+        try {
+            New-Item -ItemType Directory -Path 'C:\gobright-view' | Out-Null
+            "$password `n" | Out-File 'C:\gobright-view\password.txt' -Append
+        }
+        catch {
+            Write-Error "An error occurred while creating the folder 'C:\gobright-view'."
+        }
     }
     else {
-        Write-Output 'Invalid input. Please enter "yes" or "no". Script ended.'
-        return
+        "$password `n" | Out-File 'C:\gobright-view\password.txt' -Append
     }
-
-    Write-Output 'Create shortcut in startup folder'
-    $startupFolder = [Environment]::GetFolderPath('Startup')
-    $bootstrapperFolder = 'C:\gobright-view\bootstrapper'
-    $WshShell = New-Object -ComObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut($startupFolder + "\GoBright View.lnk")
-    $Shortcut.TargetPath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
-    $Shortcut.WorkingDirectory = $bootstrapperFolder
-    $Shortcut.Save()
+    
+    $SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+    $username = "NC-KioskUser"
+    
+    $checkUser = (Get-Localuser).name -contains $username -as [bool]
+    if (!$checkUser) {
+        try {
+            New-LocalUser $username -Password $SecurePassword -FullName $username -Description "$username - $password" -UserMayNotChangePassword -AccountNeverExpires -PasswordNeverExpires
+        }
+        catch {
+            Write-Error "An error occurred while creating the user '$username'."
+        }
+    }
+    else {
+        try {
+            Set-LocalUser $username -Password $SecurePassword -AccountNeverExpires -PasswordNeverExpires 1 -Description "$username - $password"
+        }
+        catch {
+            Write-Error "An error occurred while setting the password for the user '$username'."
+        }
+    }
+    
+    $checkMembership = Get-LocalGroupMember -Group "Gebruikers" | Where-Object { $_.Name -eq $env:computername + "\$username" }
+    if (!$checkMembership) {
+        try {
+            Add-LocalGroupMember -Group "Gebruikers" -Member $username
+        }
+        catch {
+            Write-Error "An error occurred while adding the user '$username' to the group 'Gebruikers'."
+        }
+        
+    }
+    
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    
+    if (!(Test-Path -Path "$registryPath\AutoAdminLogon")) {
+        try {
+            New-ItemProperty -Path $registryPath -Name "AutoAdminLogon" -Value 1 -PropertyType "DWord"
+        }
+        catch {
+            Write-Error "An error occurred while creating the registry value 'AutoAdminLogon'."
+        }
+    }
+    else {
+        try {
+            Set-ItemProperty -Path $registryPath -Name "AutoAdminLogon" -Value 1
+        }
+        catch {
+            Write-Error "An error occurred while setting the registry value 'AutoAdminLogon'."
+        }
+    }
+    
+    if (!(Test-Path -Path "$registryPath\DefaultUserName")) {
+        try {
+            New-ItemProperty -Path $registryPath -Name "DefaultUserName" -Value $username -PropertyType "String"
+        }
+        catch {
+            Write-Error "An error occurred while creating the registry value 'DefaultUserName'."
+        }
+    }
+    else {
+        try {
+            Set-ItemProperty -Path $registryPath -Name "DefaultUserName" -Value $username
+        }
+        catch {
+            Write-Error "An error occurred while setting the registry value 'DefaultUserName'."
+        }
+    }
+    
+    if (!(Test-Path -Path "$registryPath\DefaultPassword")) {
+        try {
+            New-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword -PropertyType "String"
+        }
+        catch {
+            Write-Error "An error occurred while creating the registry value 'DefaultPassword'."
+        }
+    }
+    else {
+        try {
+            Set-ItemProperty -Path $registryPath -Name "DefaultPassword" -Value $SecurePassword
+        }
+        catch {
+            Write-Error "An error occurred while setting the registry value 'DefaultPassword'."
+        }
+    }
+    
+    # DefaultDomainName
+    if (Test-Path -Path "$registryPath\DefaultDomainName") {
+        try {
+            Remove-ItemProperty -Path $registryPath -Name "DefaultDomainName"
+        }
+        catch {
+            Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
+        }
+    }
 }
 
 function UpdateGoBright {
+    Import-Module -Name Microsoft.PowerShell.Security
+
+    Write-Output "Checking if the user 'NC-KioskUser' is logged in..."
     $sessionInfo = quser | Where-Object { $_ -match 'NC-KioskUser' }
     if ($sessionInfo) {
-        $sessionId = $sessionInfo -split '\s+' | Select-Object -Index 2
-        logoff $sessionId
+        try {
+            $sessionId = $sessionInfo -split '\s+' | Select-Object -Index 2
+            logoff $sessionId
+            Write-Output "User 'NC-KioskUser' logged off."
+        }
+        catch {
+            Write-Error "An error occurred while logging off the user 'NC-KioskUser'."
+        }
     }
     else {
         Write-Host "User 'NC-KioskUser' not found."
     }
-
-    try {
-        $process = Get-Process -Name "GoBright.Signage.Player" -ErrorAction Stop
-        $process | Stop-Process -Force
-
-        $process = Get-Process -Name "GoBright.Signage.Player.Bootstrapper" -ErrorAction Stop
-        $process | Stop-Process -Force
-    }
-    catch [Microsoft.PowerShell.Commands.ProcessCommandException] {
-        Write-Host "$process not found" 
-    }
-    catch {
-        Write-Host "An error occurred: $($_.Exception.Message)"
+    
+    Write-Output "Checking if the processes 'GoBright.Signage.Player' and 'GoBright.Signage.Player.Bootstrapper' are running..."
+    $processes = "GoBright.Signage.Player", "GoBright.Signage.Player.Bootstrapper"
+    if ($processes) {
+        foreach ($process in $processes) {
+            try { 
+                Get-Process -Name $process -ErrorAction Stop | Stop-Process -Force
+                Write-Output "Process '$process' stopped." 
+            }
+            catch [Microsoft.PowerShell.Commands.ProcessCommandException] { 
+                Write-Error "$process not found" 
+            } 
+            catch { Write-Error "An error occurred: $($_.Exception.Message)" }
+        }
     }
     
-    try {
-        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path 'C:\Users\sande\Downloads\test' -Recurse -Force"
+    Write-Output "Checking if the folder '_dotnetbrowser-binaries' exists..."
+    $folderPath = "C:\gobright-view\_dotnetbrowser-binaries"
+    if (Test-Path -Path $folderPath) {
+        try {
+            Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$folderPath' -Recurse -Force"
+            Write-Output "Folder '$folderPath' deleted."
+        }
+        catch {
+            Write-Error "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
+        }
     }
-    catch {
-        Write-Output "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
+    else {
+        Write-Host "Folder '$folderPath' does not exist."
     }
-
-    try {
-        Import-Module -Name Microsoft.PowerShell.Security
-        $folderPath = "C:\gobright-view\"
-        $acl = Get-Acl -Path $folderPath
-        $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule("Gebruikers", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.SetAccessRule($rule)
-        Set-Acl -Path $folderPath -AclObject $acl
-    }
-    catch {
-        Write-Output "An error occured while setting permissions on the folder 'C:\gobright-view\'"
-    }
-
-    Write-Output 'Downloading the latest update and put it in the install folder'
-        
-    #URL to GoBright Installer | https://install.gobright.cloud/view/windows/?mode=download&version=5.8.9 ---> Current version used
-    $Url = 'http://install.gobright.cloud/view/windows/latest'
     
-    Invoke-WebRequest -Uri $Url -OutFile "C:\gobright-view\download.zip"
-    Rename-Item -Path "C:\gobright-view\download.zip" -NewName "C:\gobright-view\update.zip"
-    Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
-
+    Write-Output "Checking if the folder 'C:\gobright-view\' exists..."
+    $folderPath = "C:\gobright-view\"
+    if (Test-Path -Path $folderPath) {
+        try {
+            $acl = Get-Acl -Path $folderPath
+            $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule("Gebruikers", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+            $acl.SetAccessRule($rule)
+            Set-Acl -Path $folderPath -AclObject $acl
+            Write-Output "Permissions set on folder '$folderPath'."
+        }
+        catch {
+            Write-Error "An error occured while setting permissions on the folder 'C:\gobright-view\'"
+        }
+    }
+    else {
+        Write-Host "Folder '$folderPath' does not exist."
+    }
+    
+    $HTTP_Request = [System.Net.WebRequest]::Create('http://install.gobright.cloud/view/windows/latest')
+    $HTTP_Response = $HTTP_Request.GetResponse()
+    $HTTP_Status = [int]$HTTP_Response.StatusCode
+    
+    if ($HTTP_Status -eq 200) {
+        #URL to GoBright Installer | https://install.gobright.cloud/view/windows/?mode=download&version=5.8.9 ---> Current version used
+        Write-Output 'Downloading the latest update and put it in the install folder' 
+        $Url = 'http://install.gobright.cloud/view/windows/latest'
+        Invoke-WebRequest -Uri $Url -OutFile "C:\gobright-view\download.zip"
+        Rename-Item -Path "C:\gobright-view\download.zip" -NewName "C:\gobright-view\update.zip"
+    
+        If ($HTTP_Response -eq $null) { } 
+        Else { $HTTP_Response.Close() }
+    }
+    else {
+        Write-Error "The Site may be down, please check."
+    }
+    
+    $filePath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
+    if (Test-Path -Path $filePath) {
+        Write-Output "Starting the GoBright.Signage.Player.Bootstrapper.exe..."
+        Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
+    }
+    else {
+        Write-Error "File '$filePath' does not exist."
+    }
+    
     $delayInSeconds = 300  # 5 minutes in seconds
     Write-Host "Restarting computer in $delayInSeconds seconds..."
-    Start-Sleep -Seconds $delayInSeconds
-    Restart-Computer -Force
-
-    # ...
-
-    # do {
-    #     $restartChoice = Read-Host "Restart your computer now? (Y/N)"
-    #     switch ($restartChoice.ToLower()) {
-    #         'y' {
-    #             Restart-Computer -Force
-    #             break
-    #         }
-    #         'n' {
-    #             Write-Host "No restart. Please restart manually if needed."
-    #             break
-    #         }
-    #         default {
-    #             Write-Host "Invalid choice. Please select Y or N."
-    #         }
-    #     }
-    # } while ($restartChoice -notin @('y', 'n'))
+    try {
+        Start-Sleep -Seconds $delayInSeconds
+        Restart-Computer -Force
+    }
+    catch {
+        Write-Error "An error occurred while restarting the computer."
+    }    
 }
 
 Startup
