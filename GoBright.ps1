@@ -364,8 +364,8 @@ do {
         '1' { NewLocalUser }
         '2' { Install-GoBright }
         '3' { CreateStartupFolder }
-        '4' { UpdateGoBright }
-        '5' { RestartNUC }
+        '4' { RestartNUC }
+        '5' { UpdateGoBright }
         'Q' { break } # Exit the loop if 'Q' is selected
         default { Write-Host "Invalid choice. Please try again." }
     }
