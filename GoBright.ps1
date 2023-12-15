@@ -343,6 +343,23 @@ function RestartNUC {
     doRestart -delay 1
 }
 
+function CreateStartupFolder {
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if ($isAdmin) {
+        Write-Output "PowerShell is running as administrator. Exiting script."
+        return
+    }
+    else {
+        $startupFolder = [Environment]::GetFolderPath('Startup')
+        Write-Output 'Create shortcut in startup folder'
+        $WshShell = New-Object -comObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut($startupFolder + "\GoBright View.lnk")
+        $Shortcut.TargetPath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
+        $Shortcut.WorkingDirectory = $bootstrapperFolder
+        $Shortcut.Save()
+    }
+}
+
 Startup
 
 do {
@@ -350,7 +367,7 @@ do {
     Write-Host "=== Installer Menu ==="
     Write-Host "Option 1. Create Local-User"
     Write-Host "Option 2. Install Go-Bright View"
-    Write-Host "Option 3. Create Startup Folder"
+    Write-Host "Option 3. Create Start-up Folder"
     Write-Host "Option 4. Restart Computer"
     Write-Host ""
     Write-Host "=== Updater Menu ==="
