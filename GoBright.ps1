@@ -34,6 +34,17 @@ function Startup {
     $ErrorActionPreference = "Continue"
 }
 
+function doRestart($delay) {
+    Write-Host "Restarting computer in $delay seconds..."
+    try {
+        Start-Sleep -Seconds $delay
+        Restart-Computer -Force
+    }
+    catch {
+        Write-Error "An error occurred while restarting the computer."
+    }  
+}
+
 function CreateRandomPassword($length) {
     $characters = 'abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!"$%&/()=?}][{@#+'
     $randomPassword = 1..$length | ForEach-Object { Get-Random -Maximum $characters.Length }
@@ -183,7 +194,7 @@ function Install-GoBright {
         Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-NetFx4-WCF-US-OC-Package"
     }
     catch {
-        Write-Output "An error occurred during the installation of .NET Framework."
+        Write-Error "An error occurred during the installation of .NET Framework."
     }
     
     Write-Output 'Install Chrome'
@@ -193,7 +204,7 @@ function Install-GoBright {
     New-Item -ItemType Directory -Force -Path C:\gobright-view\bootstrapper
     New-Item -ItemType Directory -Force -Path C:\gobright-view\temp
     
-    Write-Output 'Download the latest update and put it in the install folder'
+    Write-Output "Downloading the latest update and installing in $installfolder"
     #URL to GoBright Installer | https://install.gobright.cloud/view/windows/?mode=download&version=5.8.9 ---> Current version used
     $Url = 'http://install.gobright.cloud/view/windows/latest'
     Invoke-WebRequest -Uri $Url -OutFile "C:\gobright-view\update.zip"
@@ -334,6 +345,10 @@ function UpdateGoBright {
     }    
 }
 
+function RestartNUC {
+    doRestart -delay 1
+}
+
 Startup
 
 do {
@@ -342,6 +357,7 @@ do {
     Write-Host "Option 1. Create Local-User"
     Write-Host "Option 2. Install Go-Bright View"
     Write-Host "Option 3. Create Startup Folder"
+    Write-Host "Option 4. Restart Computer"
     Write-Host ""
     Write-Host "=== Updater Menu ==="
     Write-Host "Option 4. Update/Fix GoBright Installation"
@@ -355,6 +371,7 @@ do {
         '2' { Install-GoBright }
         '3' { CreateStartupFolder }
         '4' { UpdateGoBright }
+        '5' { RestartNUC }
         'Q' { break } # Exit the loop if 'Q' is selected
         default { Write-Host "Invalid choice. Please try again." }
     }

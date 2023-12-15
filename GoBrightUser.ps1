@@ -128,3 +128,13 @@ if (Test-Path -Path "$registryPath\DefaultDomainName") {
         Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
     }
 }
+
+$delayInSeconds = 60  # 1 minutes in seconds
+Write-Host "Restarting computer in $delayInSeconds seconds..."
+try {
+    Start-Sleep -Seconds $delayInSeconds
+    Restart-Computer -Force
+}
+catch {
+    Write-Error "An error occurred while restarting the computer."
+}
