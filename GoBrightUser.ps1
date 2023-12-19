@@ -15,7 +15,7 @@ if (!(Test-Path -Path 'C:\gobright-view')) {
         Write-Output "Password saved to 'C:\gobright-view\password.txt'."
     }
     catch {
-        Write-Error "An error occurred while creating the folder 'C:\gobright-view'."
+        Write-Output "An error occurred while creating the folder 'C:\gobright-view'."
     }
 }
 else {
@@ -34,7 +34,7 @@ if (!$checkUser) {
         Write-Output "User '$username' created."
     }
     catch {
-        Write-Error "An error occurred while creating the user '$username'."
+        Write-Output "An error occurred while creating the user '$username'."
     }
 }
 else {
@@ -43,7 +43,7 @@ else {
         Write-Output "Password for user '$username' set."
     }
     catch {
-        Write-Error "An error occurred while setting the password for the user '$username'."
+        Write-Output "An error occurred while setting the password for the user '$username'."
     }
 }
 
@@ -54,7 +54,7 @@ if (!$checkMembership) {
         Write-Output "User '$username' added to the group $usergroup."
     }
     catch {
-        Write-Error "An error occurred while adding the user '$username' to the group $usergroup."
+        Write-Output "An error occurred while adding the user '$username' to the group $usergroup."
     }
     
 }
@@ -67,7 +67,7 @@ if (Test-Path -Path "$registryPath\AutoAdminLogon") {
         Write-Output "Registry value 'AutoAdminLogon' created."
     }
     catch {
-        Write-Error "An error occurred while creating the registry value 'AutoAdminLogon'."
+        Write-Output "An error occurred while creating the registry value 'AutoAdminLogon'."
     }
 }
 else {
@@ -76,7 +76,7 @@ else {
         Write-Output "Registry value 'AutoAdminLogon' set."
     }
     catch {
-        Write-Error "An error occurred while setting the registry value 'AutoAdminLogon'."
+        Write-Output "An error occurred while setting the registry value 'AutoAdminLogon'."
     }
 }
 
@@ -86,7 +86,7 @@ if (Test-Path -Path "$registryPath\DefaultUserName") {
         Write-Output "Registry value 'DefaultUserName' created."
     }
     catch {
-        Write-Error "An error occurred while creating the registry value 'DefaultUserName'."
+        Write-Output "An error occurred while creating the registry value 'DefaultUserName'."
     }
 }
 else {
@@ -95,7 +95,7 @@ else {
         Write-Output "Registry value 'DefaultUserName' set."
     }
     catch {
-        Write-Error "An error occurred while setting the registry value 'DefaultUserName'."
+        Write-Output "An error occurred while setting the registry value 'DefaultUserName'."
     }
 }
 
@@ -105,7 +105,7 @@ if (Test-Path -Path "$registryPath\DefaultPassword") {
         Write-Output "Registry value 'DefaultPassword' created."
     }
     catch {
-        Write-Error "An error occurred while creating the registry value 'DefaultPassword'."
+        Write-Output "An error occurred while creating the registry value 'DefaultPassword'."
     }
 }
 else {
@@ -114,7 +114,7 @@ else {
         Write-Output "Registry value 'DefaultPassword' set."
     }
     catch {
-        Write-Error "An error occurred while setting the registry value 'DefaultPassword'."
+        Write-Output "An error occurred while setting the registry value 'DefaultPassword'."
     }
 }
 
@@ -125,7 +125,7 @@ if (Test-Path -Path "$registryPath\DefaultDomainName") {
         Write-Output "Registry value 'DefaultDomainName' removed."
     }
     catch {
-        Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
+        Write-Output "An error occurred while removing the registry value 'DefaultDomainName'."
     }
 }
 
@@ -136,5 +136,5 @@ try {
     Restart-Computer -Force
 }
 catch {
-    Write-Error "An error occurred while restarting the computer."
+    Write-Output "An error occurred while restarting the computer."
 }

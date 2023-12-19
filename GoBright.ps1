@@ -41,7 +41,7 @@ function doRestart($delay) {
         Restart-Computer -Force
     }
     catch {
-        Write-Error "An error occurred while restarting the computer."
+        Write-Output "An error occurred while restarting the computer."
     }  
 }
 
@@ -63,7 +63,7 @@ function NewLocalUser {
             Write-Output "Password saved to 'C:\gobright-view\password.txt'."
         }
         catch {
-            Write-Error "An error occurred while creating the folder 'C:\gobright-view'."
+            Write-Output "An error occurred while creating the folder 'C:\gobright-view'."
         }
     }
     else {
@@ -82,7 +82,7 @@ function NewLocalUser {
             Write-Output "User '$username' created."
         }
         catch {
-            Write-Error "An error occurred while creating the user '$username'."
+            Write-Output "An error occurred while creating the user '$username'."
         }
     }
     else {
@@ -91,7 +91,7 @@ function NewLocalUser {
             Write-Output "Password for user '$username' set."
         }
         catch {
-            Write-Error "An error occurred while setting the password for the user '$username'."
+            Write-Output "An error occurred while setting the password for the user '$username'."
         }
     }
     
@@ -102,7 +102,7 @@ function NewLocalUser {
             Write-Output "User '$username' added to the group $usergroup."
         }
         catch {
-            Write-Error "An error occurred while adding the user '$username' to the group $usergroup."
+            Write-Output "An error occurred while adding the user '$username' to the group $usergroup."
         }
         
     }
@@ -115,7 +115,7 @@ function NewLocalUser {
             Write-Output "Registry value 'AutoAdminLogon' created."
         }
         catch {
-            Write-Error "An error occurred while creating the registry value 'AutoAdminLogon'."
+            Write-Output "An error occurred while creating the registry value 'AutoAdminLogon'."
         }
     }
     else {
@@ -124,7 +124,7 @@ function NewLocalUser {
             Write-Output "Registry value 'AutoAdminLogon' set."
         }
         catch {
-            Write-Error "An error occurred while setting the registry value 'AutoAdminLogon'."
+            Write-Output "An error occurred while setting the registry value 'AutoAdminLogon'."
         }
     }
     
@@ -134,7 +134,7 @@ function NewLocalUser {
             Write-Output "Registry value 'DefaultUserName' created."
         }
         catch {
-            Write-Error "An error occurred while creating the registry value 'DefaultUserName'."
+            Write-Output "An error occurred while creating the registry value 'DefaultUserName'."
         }
     }
     else {
@@ -143,7 +143,7 @@ function NewLocalUser {
             Write-Output "Registry value 'DefaultUserName' set."
         }
         catch {
-            Write-Error "An error occurred while setting the registry value 'DefaultUserName'."
+            Write-Output "An error occurred while setting the registry value 'DefaultUserName'."
         }
     }
     
@@ -153,7 +153,7 @@ function NewLocalUser {
             Write-Output "Registry value 'DefaultPassword' created."
         }
         catch {
-            Write-Error "An error occurred while creating the registry value 'DefaultPassword'."
+            Write-Output "An error occurred while creating the registry value 'DefaultPassword'."
         }
     }
     else {
@@ -162,7 +162,7 @@ function NewLocalUser {
             Write-Output "Registry value 'DefaultPassword' set."
         }
         catch {
-            Write-Error "An error occurred while setting the registry value 'DefaultPassword'."
+            Write-Output "An error occurred while setting the registry value 'DefaultPassword'."
         }
     }
     
@@ -173,7 +173,7 @@ function NewLocalUser {
             Write-Output "Registry value 'DefaultDomainName' removed."
         }
         catch {
-            Write-Error "An error occurred while removing the registry value 'DefaultDomainName'."
+            Write-Output "An error occurred while removing the registry value 'DefaultDomainName'."
         }
     }
 
@@ -196,7 +196,7 @@ function Install-GoBright {
         Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-NetFx4-WCF-US-OC-Package"
     }
     catch {
-        Write-Error "An error occurred during the installation of .NET Framework."
+        Write-Output "An error occurred during the installation of .NET Framework."
     }
     
     Write-Output 'Install Chrome'
@@ -254,7 +254,7 @@ function UpdateGoBright {
             Write-Output "User 'NC-KioskUser' logged off."
         }
         catch {
-            Write-Error "An error occurred while logging off the user 'NC-KioskUser'."
+            Write-Output "An error occurred while logging off the user 'NC-KioskUser'."
         }
     }
     else {
@@ -270,9 +270,9 @@ function UpdateGoBright {
                 Write-Output "Process '$process' stopped." 
             }
             catch [Microsoft.PowerShell.Commands.ProcessCommandException] { 
-                Write-Error "$process not found" 
+                Write-Output "$process not found" 
             } 
-            catch { Write-Error "An error occurred: $($_.Exception.Message)" }
+            catch { Write-Output "An error occurred: $($_.Exception.Message)" }
         }
     }
     
@@ -284,7 +284,7 @@ function UpdateGoBright {
             Write-Output "Folder '$folderPath' deleted."
         }
         catch {
-            Write-Error "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
+            Write-Output "An error occurred during the deletion of the folder '_dotnetbrowser-binaries'."
         }
     }
     else {
@@ -302,7 +302,7 @@ function UpdateGoBright {
             Write-Output "Permissions set on folder '$folderPath'."
         }
         catch {
-            Write-Error "An error occured while setting permissions on the folder 'C:\gobright-view\'"
+            Write-Output "An error occured while setting permissions on the folder 'C:\gobright-view\'"
         }
     }
     else {
@@ -324,7 +324,7 @@ function UpdateGoBright {
         Else { $HTTP_Response.Close() }
     }
     else {
-        Write-Error "The Site may be down, please check."
+        Write-Output "The Site may be down, please check."
     }
     
     $filePath = "C:\gobright-view\bootstrapper\GoBright.Signage.Player.Bootstrapper.exe"
@@ -333,7 +333,7 @@ function UpdateGoBright {
         Start-Process -WorkingDirectory "C:\gobright-view\bootstrapper\" -FilePath "GoBright.Signage.Player.Bootstrapper.exe"
     }
     else {
-        Write-Error "File '$filePath' does not exist."
+        Write-Output "File '$filePath' does not exist."
     }
     
     doRestart -delay 300
