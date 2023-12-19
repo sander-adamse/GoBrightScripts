@@ -16,6 +16,8 @@ else {
     Write-Host "User 'NC-KioskUser' not found."
 }
 
+## Error > GoBright.Signage.Player not found 
+
 Write-Output "Checking if the processes 'GoBright.Signage.Player' and 'GoBright.Signage.Player.Bootstrapper' are running..."
 $processes = "GoBright.Signage.Player", "GoBright.Signage.Player.Bootstrapper"
 if ($processes) {
