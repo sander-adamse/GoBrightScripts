@@ -46,6 +46,66 @@ else {
     Write-Host "Folder '$folderPath' does not exist."
 }
 
+Write-Output "Checking if the folder '_temp' exists..."
+$folderPath = "C:\gobright-view\_temp"
+if (Test-Path -Path $folderPath) {
+    try {
+        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$folderPath' -Recurse -Force"
+        Write-Output "Folder '$folderPath' deleted."
+    }
+    catch {
+        Write-Output "An error occurred during the deletion of the folder '_temp'."
+    }
+}
+else {
+    Write-Host "Folder '$folderPath' does not exist."
+}
+
+Write-Output "Checking if the folder 'bootstrapper_new' exists..."
+$folderPath = "C:\gobright-view\bootstrapper_new"
+if (Test-Path -Path $folderPath) {
+    try {
+        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$folderPath' -Recurse -Force"
+        Write-Output "Folder '$folderPath' deleted."
+    }
+    catch {
+        Write-Output "An error occurred during the deletion of the folder 'bootstrapper_new'."
+    }
+}
+else {
+    Write-Host "Folder '$folderPath' does not exist."
+}
+
+Write-Output "Checking if the item 'update_bootstrapper' exists..."
+$itemPath = "C:\gobright-view\update_bootstrapper.ps1"
+if (Test-Path -Path $itemPathh) {
+    try {
+        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$folderPath' -Recurse -Force"
+        Write-Output "Folder '$itemPath' deleted."
+    }
+    catch {
+        Write-Output "An error occurred during the deletion of the folder 'bootstrapper_new'."
+    }
+}
+else {
+    Write-Host "Folder '$itemPath' does not exist."
+}
+
+Write-Output "Checking if the item 'update' exists..."
+$itemPath = "C:\gobright-view\update.zip"
+if (Test-Path -Path $itemPath) {
+    try {
+        Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$itemPath' -Recurse -Force"
+        Write-Output "Folder '$itemPath' deleted."
+    }
+    catch {
+        Write-Output "An error occurred during the deletion of the folder 'bootstrapper_new'."
+    }
+}
+else {
+    Write-Host "Folder '$itemPath' does not exist."
+}
+
 Write-Output "Checking if the folder 'C:\gobright-view\' exists..."
 $folderPath = "C:\gobright-view\"
 if (Test-Path -Path $folderPath) {
