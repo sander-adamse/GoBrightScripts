@@ -78,7 +78,7 @@ else {
 
 Write-Output "Checking if the item 'update_bootstrapper' exists..."
 $itemPath = "C:\gobright-view\update_bootstrapper.ps1"
-if (Test-Path -Path $itemPathh) {
+if (Test-Path -Path $itemPath) {
     try {
         Start-Process powershell -Verb RunAs -ArgumentList "-Command Remove-Item -Path '$folderPath' -Recurse -Force"
         Write-Output "Folder '$itemPath' deleted."
